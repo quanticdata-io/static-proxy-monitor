@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security issue
+    url: https://github.com/quanticdata-io/static-proxy-monitor/blob/main/SECURITY.md
+    about: Report vulnerabilities privately, not in a public issue.
+  - name: QuanticData API documentation
+    url: https://quanticdata.io/docs/
+    about: Questions about QuanticData plans, keys and the proxy generator.

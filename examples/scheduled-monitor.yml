@@ -1,0 +1,35 @@
+# Check a fleet of static proxies every morning and keep the last run in the
+# repository, so each run reports what changed. Copy to .github/workflows/ in
+# your own private repository, put the list in the FLEET secret (one
+# "PROXY EXPECTED_IP" per line), and commit an empty state.json once.
+name: Static proxy monitor
+
+on:
+  schedule:
+    - cron: "30 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install "static-proxy-monitor @ git+https://github.com/quanticdata-io/static-proxy-monitor"
+      - name: Check
+        env:
+          FLEET: ${{ secrets.FLEET }}
+        run: |
+          printf '%s\n' "$FLEET" > fleet.txt
+          static-proxy-monitor -f fleet.txt --geo ipinfo --expect-country US --state state.json --fail-on-problems
+      - name: Save the state
+        if: always()
+        run: |
+          rm -f fleet.txt
+          git config user.name "github-actions[bot]" && git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state.json && git commit -m "Monitor run" && git push || true
